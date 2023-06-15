@@ -1,0 +1,7 @@
+django
+psycopg2-binary
+Pillow
+latex
+jinja2
+Faker
+watchdog
