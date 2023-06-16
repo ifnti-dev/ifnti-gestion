@@ -118,35 +118,34 @@ class Etudiant(Utilisateur):
 
 
 class Personnel(Utilisateur):
+    id = models.CharField(primary_key=True, blank=True, max_length=12)  
     salaireBrut = models.DecimalField(max_digits=10, decimal_places=2,  verbose_name="Salaire Brut")
     dernierdiplome = models.ImageField(null=True, blank=True, verbose_name="Dernier diplome")
     nbreJrsCongesRestant = models.IntegerField(verbose_name="Nonbre de jours de congé restant")
     nbreJrsConsomme = models.IntegerField(verbose_name="Nonbre de jours consommé")
 
-    def save(self):
-        #print(self.id)
-        if self.id == None:
-            username = (self.prenom + self.nom).lower()
-            year = date.today().year
-            password = 'ifnti' + str(year) + '!'
-            user = User.objects.create_user(username=username, password=password)
-            self.user = user
-
-        return super().save()
-    
-    def showId(self):
-        return f'PER{self.id}'
 
 class Enseignant(Personnel):
     CHOIX_TYPE = (('Vacataire', 'Vacataire'), ('Permanent', 'Permanent'))
     type = models.CharField(null=True,blank=True,max_length=9, choices=CHOIX_TYPE)
     specialite =  models.CharField(max_length=300, verbose_name="Spécialité", blank=True)
-    
-    def showId(self):
-        return f'ENS{self.id}'
+   
+    def save(self):
+        if not self.id:
+            enseignants = Enseignant.objects.all()
+            if enseignants:
+                rang_ens = int(enseignants.last().id.replace("ENS", ""))
+                self.id = "ENS" + str(rang_ens + 1)
+            else:
+                self.id = "ENS" + str(1)
+            # Création de l'utilisateur associé à l'instance de l'enseignant
+            username = (self.prenom[0] + self.nom).lower()
+            user = User.objects.create_user(username=username, password="ifnti2023!")
+            self.user = user # On associe l'utilisateur à l'enseignant
+        return super().save()
 
     def __str__(self):
-        return "M. "+self.prenom + " " + self.nom
+        return self.prenom + " " + self.nom
 
 
 
